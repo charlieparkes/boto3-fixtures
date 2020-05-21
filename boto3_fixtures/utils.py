@@ -32,7 +32,7 @@ def environment(
     def env(**kwargs):
         vars = {
             "APP_ENVIRONMENT": "localstack",
-            "AWS_DEFAULT_REGION": "us-east-2",
+            "AWS_DEFAULT_REGION": "us-east-1",
         }
         vars.update(fixtures)
         vars.update({clean(s): s for s in kinesis_streams})

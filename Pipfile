@@ -1,0 +1,18 @@
+[packages]
+backoff = "*"
+boto3 = "*"
+
+[dev-packages]
+advbumpversion = "*"
+codecov = "*"
+moto = "*"
+pipenv = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-localstack = "*"
+recommonmark = "*"
+sphinx = "*"
+wheel = "*"
+
+[requires]
+python_version = "3.6"

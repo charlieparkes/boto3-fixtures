@@ -2,7 +2,7 @@ import json
 
 import boto3
 
-from boto3_fixtures import testing, utils
+from boto3_fixtures import utils
 from boto3_fixtures.contrib import sqs
 
 
@@ -27,7 +27,7 @@ def check_sqs_fixtures(sqs_queues):
 
 def check_dynamodb_fixtures(dynamodb_tables):
     client = boto3.client("dynamodb")
-    resp = utils.call(testing.backoff_check, func=lambda: client.list_tables())
+    resp = utils.call(utils.backoff_check, func=lambda: client.list_tables())
     for table in dynamodb_tables:
         name = table["TableName"]
         assert name in resp["TableNames"]
@@ -35,7 +35,15 @@ def check_dynamodb_fixtures(dynamodb_tables):
 
 def check_s3_fixtures(s3_buckets):
     client = boto3.client("s3")
-    resp = utils.call(testing.backoff_check, func=lambda: client.list_buckets())
+    resp = utils.call(utils.backoff_check, func=lambda: client.list_buckets())
+    bucket_names = {b["Name"]: b for b in resp["Buckets"]}
+    for b in s3_buckets:
+        assert b in bucket_names
+
+
+def check_lambda_fixtures():
+    client = boto3.client("s3")
+    resp = utils.call(utils.backoff_check, func=lambda: client.list_buckets())
     bucket_names = {b["Name"]: b for b in resp["Buckets"]}
     for b in s3_buckets:
         assert b in bucket_names

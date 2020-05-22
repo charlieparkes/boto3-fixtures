@@ -20,7 +20,7 @@ def dynamodb_tables():
 
 @pytest.fixture(scope="class")
 def dynamodb(localstack, dynamodb_tables):
-    with boto3_fixtures.testing.setup_dynamodb(dynamodb_tables) as tables:
+    with boto3_fixtures.setup_dynamodb(dynamodb_tables) as tables:
         yield tables
 ```
 """

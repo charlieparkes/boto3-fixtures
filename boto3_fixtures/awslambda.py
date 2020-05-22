@@ -4,7 +4,7 @@ Example Usage
 ```python
 @pytest.fixture(scope="class")
 def lam(localstack, environment):
-    with boto3_fixtures.testing.setup_awslambda(
+    with boto3_fixtures.setup_awslambda(
                 runtime="python3.6",
                 environment=environment(MOCK_AWS=True),
             ) as lam:
@@ -18,12 +18,12 @@ def test_lambda():
 """
 
 import json
+from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
 
 import boto3_fixtures.contrib.boto3
 from boto3_fixtures import utils
-from boto3_fixtures.testing import utils as testing_utils
 
 
 def create_lambda(
@@ -91,3 +91,6 @@ def setup_awslambda(**kwargs):
         yield create_lambda(**kwargs)
     finally:
         destroy_lambda(**kwargs)
+
+
+MockLambdaContext = namedtuple("Context", ["function_name"])

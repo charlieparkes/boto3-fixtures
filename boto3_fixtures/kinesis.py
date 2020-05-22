@@ -8,7 +8,7 @@ def kinesis_streams():
 
 @pytest.fixture(scope="class")
 def kinesis(localstack, kinesis_streams):
-    with boto3_fixtures.testing.setup_kinesis(kinesis_streams) as streams:
+    with boto3_fixtures.setup_kinesis(kinesis_streams) as streams:
         yield streams
 ```
 """

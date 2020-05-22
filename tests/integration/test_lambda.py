@@ -1,6 +1,3 @@
-# These tests have been disabled because they don't add any additional value.
-# Testing the test fixtures for localstack will be moved to a new project.
-
 # import pytest
 # from decouple import config
 # from tests import fixtures

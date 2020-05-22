@@ -8,7 +8,7 @@ def sqs_queues():
 
 @pytest.fixture(scope="class")
 def sqs(localstack, sqs_queues):
-    with boto3_fixtures.testing.setup_s3(s3_buckets) as buckets:
+    with boto3_fixtures.setup_s3(s3_buckets) as buckets:
         yield buckets
 ```
 """
@@ -22,7 +22,7 @@ from botocore.exceptions import ClientError
 import boto3_fixtures.contrib.boto3
 from boto3_fixtures import utils
 from boto3_fixtures.contrib.sqs import get_queue_arn
-from boto3_fixtures.testing.utils import backoff_check
+from boto3_fixtures.utils import backoff_check
 
 
 def sqs_payload(payloads):

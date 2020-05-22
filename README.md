@@ -65,3 +65,6 @@ def test_my_code():
 ## WIP
 * Tons more examples
 * `pytest` plugin/fixtures
+* More AWS services!
+
+Please submit a PR or issue if you'd like to see support for a specific AWS service!

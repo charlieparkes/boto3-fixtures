@@ -18,9 +18,9 @@ dummy_lambda/dist/.venv:
 	$(WITH_PIPENV) pip install -r <(PIPENV_QUIET=1 pipenv --bare lock -r) --ignore-installed --target $@
 
 .PHONY: build-test-lambda
-build-test-lambda: python/distif
+build-test-lambda: # python/distif
 	@make dummy_lambda/dist/.venv
-	pip install dist/boto3-fixtures-*.tar.gz --target=dummy_lambda/dist/.venv --upgrade --no-deps --ignore-requires-python
+	@# pip install dist/boto3-fixtures-*.tar.gz --target=dummy_lambda/dist/.venv --upgrade --no-deps --ignore-requires-python
 	@cd dummy_lambda; make build
 
 dummy_lambda/dist/build.zip:

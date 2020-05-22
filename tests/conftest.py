@@ -137,7 +137,7 @@ def lambda_functions():
             "name": "my_lambda",
             "path": "dummy_lambda/dist/build.zip",
             "runtime": "python3.6",
-            "environment": {},
+            "environment": {"test_bool_env_var": True,},
         }
     ]
 

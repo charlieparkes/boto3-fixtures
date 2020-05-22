@@ -12,6 +12,8 @@ docs: pipenv
 test: dummy_lambda/dist/build.zip pytest
 
 
+rebuild: python/clean/dist clean-test-lambda python/dist build-test-lambda
+
 dummy_lambda/dist/.venv:
 	$(WITH_PIPENV) pip install -r <(PIPENV_QUIET=1 pipenv --bare lock -r) --ignore-installed --target $@
 
@@ -24,6 +26,10 @@ build-test-lambda: python/distif
 dummy_lambda/dist/build.zip:
 	$(MAKE) build-test-lambda
 
+.PHONY: clean-dummy-lambda
+clean-test-lambda:
+	@cd dummy_lambda; make clean
+
 .PHONY: release_patch
 release_patch: bumpversion/release_patch
 
@@ -34,6 +40,5 @@ release_minor: bumpversion/release_minor
 release_major: bumpversion/release_major
 
 .PHONY: clean
-clean: python/clean/dist pipenv/clean python/clean
-	@cd dummy_lambda; make clean
+clean: python/clean/dist pipenv/clean python/clean clean-dummy-lambda
 	@$(MAKE) bh/clean

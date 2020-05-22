@@ -36,7 +36,9 @@ setup(
         "Bug Tracker": "https://github.com/mintel/boto3-fixtures/issues",
         "Source Code": "https://github.com/mintel/boto3-fixtures",
     },
-    packages=find_packages(where=HERE, exclude=["dummy_lambda", "tests", "tests.*", "docs"]),
+    packages=find_packages(
+        where=HERE, exclude=["dummy_lambda", "tests", "tests.*", "docs"]
+    ),
     description=__summary__,
     long_description=read("README.md"),
     long_description_content_type="text/markdown",

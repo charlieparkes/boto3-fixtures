@@ -31,6 +31,5 @@ class Service(ContextDecorator):
         self.state = self.service.setup(*self.args, **self.kwargs)
         return self
 
-
     def __exit__(self, *exc):
         return self.service.teardown(**self.state)

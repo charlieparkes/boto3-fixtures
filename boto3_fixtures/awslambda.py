@@ -96,7 +96,7 @@ def invoke(name: str, payload: dict = {}, **kwargs):
         body = json.loads(body)
     except Exception:
         pass
-    testing_utils.emit_logs(body)
+    utils.emit_logs(body)
     return response, body
 
 
@@ -110,25 +110,3 @@ def teardown(configs):
 
 
 MockContext = namedtuple("Context", ["function_name"])
-
-
-class MockPayload:
-    @classmethod
-    def sqs(payloads):
-        def fmt(p):
-            return {"body": json.dumps(p)}
-
-        records = [fmt(p) for p in payloads]
-        return {"Records": records}
-
-    @classmethod
-    def kinesis(payloads):
-        def fmt(p):
-            return {
-                "kinesis": {
-                    "data": str(base64.b64encode(json.dumps(p).encode()), "utf-8")
-                }
-            }
-
-        records = [fmt(p) for p in payloads]
-        return {"Records": records}

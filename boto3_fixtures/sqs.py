@@ -44,7 +44,9 @@ def create_sqs_queue(q, dlq_url=None):
     resp = utils.call(client.create_queue, QueueName=q, Attributes=attrs)
     utils.call(
         backoff_check,
-        func=lambda: boto3_fixtures.contrib.boto3.client("sqs").get_queue_url(QueueName=q),
+        func=lambda: boto3_fixtures.contrib.boto3.client("sqs").get_queue_url(
+            QueueName=q
+        ),
     )
     return resp["QueueUrl"]
 
@@ -64,7 +66,9 @@ def create_sqs_queues(names: list, redrive=False):
 
 @backoff.on_exception(backoff.expo, ClientError, max_tries=3)
 def destroy_sqs_queue(url):
-    return utils.call(boto3_fixtures.contrib.boto3.client("sqs").delete_queue, QueueUrl=url)
+    return utils.call(
+        boto3_fixtures.contrib.boto3.client("sqs").delete_queue, QueueUrl=url
+    )
 
 
 def destroy_sqs_queues(queues: dict):

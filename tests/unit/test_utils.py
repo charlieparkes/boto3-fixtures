@@ -1,6 +1,4 @@
-import json
 
-import pytest
 
 from boto3_fixtures import utils
 

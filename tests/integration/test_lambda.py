@@ -1,8 +1,5 @@
-import json
 
 import pytest
-from decouple import config
-from tests import fixtures
 
 import boto3_fixtures as b3f
 

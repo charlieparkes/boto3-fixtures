@@ -19,7 +19,6 @@ def test():
 
 import json
 from collections import namedtuple
-from contextlib import contextmanager
 from pathlib import Path
 
 import backoff

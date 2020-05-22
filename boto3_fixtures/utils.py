@@ -1,10 +1,7 @@
-import hashlib
 import json
 import logging
 import os
-from collections import namedtuple
 from contextlib import contextmanager
-from enum import Enum, EnumMeta
 
 import backoff
 from botocore.exceptions import ClientError

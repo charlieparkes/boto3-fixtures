@@ -1,8 +1,4 @@
-import json
-import logging
-from functools import wraps
 
-import botocore
 
 from boto3_fixtures import utils
 from boto3_fixtures.contrib import boto3, mindictive

@@ -9,7 +9,6 @@ def s3(localstack, s3_buckets):
 ```
 """
 
-from contextlib import contextmanager
 
 import backoff
 from botocore.exceptions import ClientError, ConnectionClosedError

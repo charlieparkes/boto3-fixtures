@@ -25,7 +25,6 @@ def dynamodb(localstack, dynamodb_tables):
 ```
 """
 
-from contextlib import contextmanager
 
 import backoff
 import boto3

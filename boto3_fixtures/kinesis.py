@@ -13,15 +13,9 @@ def kinesis(localstack, kinesis_streams):
 ```
 """
 
-import base64
-import json
-import logging
-from contextlib import contextmanager
-from functools import wraps
 
 import backoff
 from botocore.exceptions import ClientError
-from decouple import config
 
 import boto3_fixtures.contrib.boto3
 from boto3_fixtures import utils

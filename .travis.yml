@@ -13,6 +13,7 @@ stages:
 
 install:
   - make init
+before_script:
   - make python/dist
   - make build-test-lambda
 script:

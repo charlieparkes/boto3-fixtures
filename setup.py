@@ -33,8 +33,8 @@ setup(
     license="APACHE",
     url=__uri__,
     project_urls={
-        "Bug Tracker": "https://github.com/mintel/boto3-fixtures/issues",
-        "Source Code": "https://github.com/mintel/boto3-fixtures",
+        "Bug Tracker": "https://github.com/alphachai/boto3-fixtures/issues",
+        "Source Code": "https://github.com/alphachai/boto3-fixtures",
     },
     packages=find_packages(
         where=HERE, exclude=["dummy_lambda", "tests", "tests.*", "docs"]

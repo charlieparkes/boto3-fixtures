@@ -44,9 +44,10 @@ def destroy_buckets(names: list):
     return {n: destroy_bucket(n) for n in names}
 
 
-@contextmanager
 def setup(names):
-    try:
-        yield create_buckets(names)
-    finally:
-        destroy_buckets(names)
+    create_buckets(names)
+    return {"names": names}
+
+
+def teardown(names):
+    destroy_buckets(names)

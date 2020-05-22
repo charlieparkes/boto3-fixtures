@@ -22,15 +22,19 @@ from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
 
+import backoff
+from botocore.exceptions import ClientError
+
 import boto3_fixtures.contrib.boto3
 from boto3_fixtures import utils
 
 
-def create(
-    name: str = "my_lambda",
-    runtime: str = "python3.8",
+@backoff.on_exception(backoff.expo, ClientError, max_time=30)
+def create_lambda(
+    name: str,
+    runtime: str,
     role: str = "foobar",
-    handler: str = "main.lambda_handler",
+    handler: str = "main.handler",
     path: str = "dist/build.zip",
     environment: dict = {},
     **kwargs,
@@ -60,13 +64,24 @@ def create(
         )
 
 
-def destroy(name: str = "my_lambda", **kwargs):
+def create_lambdas(configs):
+    for c in configs:
+        create_lambda(**c)
+
+
+@backoff.on_exception(backoff.expo, ClientError, max_time=30)
+def destroy_lambda(name: str, **kwargs):
     return utils.call(
         boto3_fixtures.contrib.boto3.client("lambda").delete_function, FunctionName=name
     )
 
 
-def invoke(name: str = "my_lambda", payload: dict = {}, **kwargs):
+def destroy_lambdas(configs):
+    for c in configs:
+        destroy_lambda(**c)
+
+
+def invoke(name: str, payload: dict = {}, **kwargs):
     defaults = {
         "InvocationType": "RequestResponse",
         "LogType": "Tail",
@@ -85,12 +100,13 @@ def invoke(name: str = "my_lambda", payload: dict = {}, **kwargs):
     return response, body
 
 
-@contextmanager
-def setup(**kwargs):
-    try:
-        yield create(**kwargs)
-    finally:
-        destroy(**kwargs)
+def setup(configs):
+    create_lambdas(configs)
+    return {"configs": configs}
+
+
+def teardown(configs):
+    destroy_lambdas(configs)
 
 
 MockContext = namedtuple("Context", ["function_name"])

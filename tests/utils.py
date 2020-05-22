@@ -41,9 +41,9 @@ def check_s3_fixtures(s3_buckets):
         assert b in bucket_names
 
 
-def check_lambda_fixtures():
-    client = boto3.client("s3")
-    resp = utils.call(utils.backoff_check, func=lambda: client.list_buckets())
-    bucket_names = {b["Name"]: b for b in resp["Buckets"]}
-    for b in s3_buckets:
-        assert b in bucket_names
+def check_lambda_fixtures(lambda_functions):
+    client = boto3.client("lambda")
+    resp = utils.call(utils.backoff_check, func=lambda: client.list_functions())
+    lambda_names = {l["FunctionName"]: l for l in resp["Functions"]}
+    for lam in lambda_functions:
+        assert lam["name"] in lambda_names

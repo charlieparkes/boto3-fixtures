@@ -66,9 +66,10 @@ def destroy_tables(dynamodb_tables):
         destroy_table(table)
 
 
-@contextmanager
 def setup(tables):
-    try:
-        yield create_tables(tables)
-    finally:
-        destroy_tables(tables)
+    create_tables(tables)
+    return {"tables": tables}
+
+
+def teardown(tables):
+    destroy_tables(tables)

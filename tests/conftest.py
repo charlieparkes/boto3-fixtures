@@ -31,7 +31,7 @@ def kinesis_streams():
 
 @pytest.fixture(scope="class")
 def kinesis_localstack(localstack, kinesis_streams):
-    with b3f.kinesis.setup(kinesis_streams) as streams:
+    with b3f.Service("kinesis", kinesis_streams) as streams:
         yield streams
 
 
@@ -39,7 +39,7 @@ def kinesis_localstack(localstack, kinesis_streams):
 def kinesis(kinesis_streams, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_kinesis():
-            with b3f.kinesis.setup(kinesis_streams) as streams:
+            with b3f.Service("kinesis", kinesis_streams) as streams:
                 yield streams
 
 
@@ -50,7 +50,7 @@ def sqs_queues():
 
 @pytest.fixture(scope="class")
 def sqs_localstack(localstack, sqs_queues):
-    with b3f.sqs.setup(sqs_queues, redrive=True) as queues:
+    with b3f.Service("sqs", names=sqs_queues, redrive=True) as queues:
         yield queues
 
 
@@ -58,7 +58,7 @@ def sqs_localstack(localstack, sqs_queues):
 def sqs(sqs_queues, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_sqs():
-            with b3f.sqs.setup(sqs_queues, redrive=True) as queues:
+            with b3f.Service("sqs", names=sqs_queues, redrive=True) as queues:
                 yield queues
 
 
@@ -81,7 +81,7 @@ def dynamodb_tables():
 
 @pytest.fixture(scope="class")
 def dynamodb_localstack(localstack, dynamodb_tables):
-    with b3f.dynamodb.setup(dynamodb_tables) as tables:
+    with b3f.Service("dynamodb", dynamodb_tables) as tables:
         yield tables
 
 
@@ -89,7 +89,7 @@ def dynamodb_localstack(localstack, dynamodb_tables):
 def dynamodb(dynamodb_tables, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_dynamodb2():
-            with b3f.dynamodb.setup(dynamodb_tables) as tables:
+            with b3f.Service("dynamodb", dynamodb_tables) as tables:
                 yield tables
 
 
@@ -100,7 +100,7 @@ def s3_buckets():
 
 @pytest.fixture(scope="class")
 def s3_localstack(localstack, s3_buckets):
-    with b3f.s3.setup(s3_buckets) as buckets:
+    with b3f.Service("s3", s3_buckets) as buckets:
         yield buckets
 
 
@@ -108,7 +108,7 @@ def s3_localstack(localstack, s3_buckets):
 def s3(s3_buckets, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_s3():
-            with b3f.s3.setup(s3_buckets) as buckets:
+            with b3f.Service("s3", s3_buckets) as buckets:
                 yield buckets
 
 
@@ -131,22 +131,32 @@ def set_environment(environment):
 
 
 @pytest.fixture(scope="session")
-def lambdas():
+def lambda_functions():
     return [
         {
+            "name": "my_lambda",
             "path": "dummy_lambda/dist/build.zip",
             "runtime": "python3.6",
-            "environment": {"MOCK_AWS": True},
+            "environment": {},
         }
     ]
 
 
 @pytest.fixture(scope="class")
-def lam_localstack(localstack, lambdas, environment):
-    pass
-    # with b3f.awslambda.setup(
-    #     path="dummy_lambda/dist/build.zip",
-    #     runtime="python3.6",
-    #     environment=environment(MOCK_AWS=True),
-    # ) as lam:
-    #     yield lam
+def lam_localstack(localstack, lambda_functions, environment):
+    for lam in lambda_functions:
+        lam["environment"] = {**environment(), **lam.get("environment", {})}
+
+    with b3f.Service("awslambda", lambda_functions):
+        yield
+
+
+@pytest.fixture(scope="class")
+def lam(lambda_functions, environment):
+    for lam in lambda_functions:
+        lam["environment"] = {**environment(), **lam.get("environment", {})}
+
+    with b3f.utils.set_env(environment()):
+        with moto.mock_lambda():
+            with b3f.Service("awslambda", lambda_functions):
+                yield

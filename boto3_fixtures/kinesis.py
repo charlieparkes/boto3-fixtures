@@ -20,7 +20,6 @@ from contextlib import contextmanager
 from functools import wraps
 
 import backoff
-import botocore
 from botocore.exceptions import ClientError
 from decouple import config
 
@@ -54,9 +53,10 @@ def destroy_streams(names: list):
     return {n: destroy_stream(n) for n in names}
 
 
-@contextmanager
 def setup(names):
-    try:
-        yield create_streams(names)
-    finally:
-        destroy_streams(names)
+    names = create_streams(names)
+    return {"names": names}
+
+
+def teardown(names):
+    destroy_streams(names)

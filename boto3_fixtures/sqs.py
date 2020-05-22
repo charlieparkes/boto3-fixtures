@@ -67,10 +67,10 @@ def destroy_queues(queues: dict):
     return {name: destroy_queue(url) for name, url in queues.items()}
 
 
-@contextmanager
-def setup(names, redrive=False):
+def setup(names: list, redrive=False):
     queues = create_queues(names, redrive=redrive)
-    try:
-        yield queues
-    finally:
-        destroy_queues(queues)
+    return {"queues": queues}
+
+
+def teardown(queues):
+    return destroy_queues(queues)

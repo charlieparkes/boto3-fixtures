@@ -31,7 +31,6 @@ Combine this with a local testing stack of your choice (moto, localstack).
 ```python
 import boto3, boto3_fixtures, moto
 
-
 def test_my_code():
     with moto.mock_sqs():
         with boto3_fixtures.Service("sqs", names=["first-queue", "second-queue"]) as queues:
@@ -44,7 +43,6 @@ You can create pytest fixtures to simplify this even further.
 
 ```python
 import pytest, boto3_fixtures, moto
-
 
 @pytest.fixture
 def sqs_queues():

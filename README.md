@@ -16,25 +16,15 @@ Testing software which touches cloud infrastructure doesn't have to be difficult
 ## Example
 
 ```python
-import boto3
-import boto3_fixtures
-import moto
-import pytest
+import boto3, boto3_fixtures, moto
 
-# Create Fixture
-@pytest.fixture
-def sqs():
+
+def test_my_code():
     with moto.mock_sqs():
         with boto3_fixtures.Service("sqs", names=["first-queue", "second-queue"]) as queues:
-            yield queues
-
-
-# Test!
-@pytest.mark.usefixtures("sqs")
-def test_my_code():
-    client = boto3.client("sqs")
-    response = client.list_queues()
-    assert len(response["QueueUrls"]) == 2
+            client = boto3.client("sqs")
+            response = client.list_queues()
+            assert len(response["QueueUrls"]) == 2
 ```
 
 

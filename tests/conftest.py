@@ -5,7 +5,7 @@ import pytest
 import pytest_localstack
 from tests import fixtures
 
-import boto3_fixtures
+import boto3_fixtures as b3f
 
 logger = logging.getLogger()
 localstack = pytest_localstack.patch_fixture(
@@ -31,15 +31,15 @@ def kinesis_streams():
 
 @pytest.fixture(scope="class")
 def kinesis_localstack(localstack, kinesis_streams):
-    with boto3_fixtures.setup_kinesis(kinesis_streams) as streams:
+    with b3f.kinesis.setup(kinesis_streams) as streams:
         yield streams
 
 
 @pytest.fixture(scope="class")
 def kinesis(kinesis_streams, environment):
-    with boto3_fixtures.utils.set_env(environment()):
+    with b3f.utils.set_env(environment()):
         with moto.mock_kinesis():
-            with boto3_fixtures.setup_kinesis(kinesis_streams) as streams:
+            with b3f.kinesis.setup(kinesis_streams) as streams:
                 yield streams
 
 
@@ -50,15 +50,15 @@ def sqs_queues():
 
 @pytest.fixture(scope="class")
 def sqs_localstack(localstack, sqs_queues):
-    with boto3_fixtures.setup_sqs(sqs_queues, redrive=True) as queues:
+    with b3f.sqs.setup(sqs_queues, redrive=True) as queues:
         yield queues
 
 
 @pytest.fixture(scope="class")
 def sqs(sqs_queues, environment):
-    with boto3_fixtures.utils.set_env(environment()):
+    with b3f.utils.set_env(environment()):
         with moto.mock_sqs():
-            with boto3_fixtures.setup_sqs(sqs_queues, redrive=True) as queues:
+            with b3f.sqs.setup(sqs_queues, redrive=True) as queues:
                 yield queues
 
 
@@ -81,15 +81,15 @@ def dynamodb_tables():
 
 @pytest.fixture(scope="class")
 def dynamodb_localstack(localstack, dynamodb_tables):
-    with boto3_fixtures.setup_dynamodb(dynamodb_tables) as tables:
+    with b3f.dynamodb.setup(dynamodb_tables) as tables:
         yield tables
 
 
 @pytest.fixture(scope="class")
 def dynamodb(dynamodb_tables, environment):
-    with boto3_fixtures.utils.set_env(environment()):
+    with b3f.utils.set_env(environment()):
         with moto.mock_dynamodb2():
-            with boto3_fixtures.setup_dynamodb(dynamodb_tables) as tables:
+            with b3f.dynamodb.setup(dynamodb_tables) as tables:
                 yield tables
 
 
@@ -100,21 +100,22 @@ def s3_buckets():
 
 @pytest.fixture(scope="class")
 def s3_localstack(localstack, s3_buckets):
-    with boto3_fixtures.setup_s3(s3_buckets) as buckets:
+    with b3f.s3.setup(s3_buckets) as buckets:
         yield buckets
 
 
 @pytest.fixture(scope="class")
 def s3(s3_buckets, environment):
-    with boto3_fixtures.utils.set_env(environment()):
+    with b3f.utils.set_env(environment()):
         with moto.mock_s3():
-            with boto3_fixtures.setup_s3(s3_buckets) as buckets:
+            with b3f.s3.setup(s3_buckets) as buckets:
                 yield buckets
 
 
 @pytest.fixture(scope="class")
 def environment(sqs_queues, kinesis_streams, dynamodb_tables, s3_buckets):
-    return boto3_fixtures.environment(
+    # Ideally, nothing should have to "spin up" to run this fixture (for example, localstack)
+    return b3f.utils.environment(
         fixtures=fixtures.ENV,
         sqs_queues=sqs_queues,
         kinesis_streams=kinesis_streams,
@@ -125,7 +126,7 @@ def environment(sqs_queues, kinesis_streams, dynamodb_tables, s3_buckets):
 
 @pytest.fixture(scope="function")
 def set_environment(environment):
-    with boto3_fixtures.utils.set_env(environment()):
+    with b3f.utils.set_env(environment()):
         yield
 
 
@@ -143,7 +144,7 @@ def lambdas():
 @pytest.fixture(scope="class")
 def lam_localstack(localstack, lambdas, environment):
     pass
-    # with boto3_fixtures.setup_awslambda(
+    # with b3f.awslambda.setup(
     #     path="dummy_lambda/dist/build.zip",
     #     runtime="python3.6",
     #     environment=environment(MOCK_AWS=True),

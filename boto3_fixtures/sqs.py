@@ -25,16 +25,8 @@ from boto3_fixtures.contrib.sqs import get_queue_arn
 from boto3_fixtures.utils import backoff_check
 
 
-def sqs_payload(payloads):
-    def fmt(p):
-        return {"body": json.dumps(p)}
-
-    records = [fmt(p) for p in payloads]
-    return {"Records": records}
-
-
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
-def create_sqs_queue(q, dlq_url=None):
+def create_queue(q, dlq_url=None):
     client = boto3_fixtures.contrib.boto3.client("sqs")
     attrs = {}
     if dlq_url:
@@ -51,34 +43,34 @@ def create_sqs_queue(q, dlq_url=None):
     return resp["QueueUrl"]
 
 
-def create_sqs_queues(names: list, redrive=False):
+def create_queues(names: list, redrive=False):
     resp = {}
     for n in names:
         if redrive:
             dlq_name = f"{n}-dlq"
-            resp[dlq_name] = create_sqs_queue(dlq_name)
-            resp[n] = create_sqs_queue(n, dlq_url=resp[dlq_name])
+            resp[dlq_name] = create_queue(dlq_name)
+            resp[n] = create_queue(n, dlq_url=resp[dlq_name])
         else:
-            resp[n] = create_sqs_queue(n)
+            resp[n] = create_queue(n)
 
     return resp
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_tries=3)
-def destroy_sqs_queue(url):
+def destroy_queue(url):
     return utils.call(
         boto3_fixtures.contrib.boto3.client("sqs").delete_queue, QueueUrl=url
     )
 
 
-def destroy_sqs_queues(queues: dict):
-    return {name: destroy_sqs_queue(url) for name, url in queues.items()}
+def destroy_queues(queues: dict):
+    return {name: destroy_queue(url) for name, url in queues.items()}
 
 
 @contextmanager
-def setup_sqs(names, redrive=False):
-    queues = create_sqs_queues(names, redrive=redrive)
+def setup(names, redrive=False):
+    queues = create_queues(names, redrive=redrive)
     try:
         yield queues
     finally:
-        destroy_sqs_queues(queues)
+        destroy_queues(queues)

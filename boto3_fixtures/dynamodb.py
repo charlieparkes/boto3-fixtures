@@ -36,15 +36,15 @@ from boto3_fixtures import utils
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
-def create_dynamodb_table(config):
+def create_table(config):
     config.update({"BillingMode": "PAY_PER_REQUEST"})
     return utils.call(boto3.client("dynamodb").create_table, **config)
 
 
-def create_dynamodb_tables(dynamodb_tables):
+def create_tables(dynamodb_tables):
     client = boto3_fixtures.contrib.boto3.client("dynamodb")
     for table in dynamodb_tables:
-        assert create_dynamodb_table(table)
+        assert create_table(table)
     for table in dynamodb_tables:
         name = table["TableName"]
         client.get_waiter("table_exists").wait(
@@ -55,20 +55,20 @@ def create_dynamodb_tables(dynamodb_tables):
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_tries=3)
-def destroy_dynamodb_table(config):
+def destroy_table(config):
     client = boto3_fixtures.contrib.boto3.client("dynamodb")
     return utils.call(client.delete_table, TableName=config["TableName"])
 
 
-def destroy_dynamodb_tables(dynamodb_tables):
+def destroy_tables(dynamodb_tables):
     boto3_fixtures.contrib.boto3.client("dynamodb")
     for table in dynamodb_tables:
-        destroy_dynamodb_table(table)
+        destroy_table(table)
 
 
 @contextmanager
-def setup_dynamodb(tables):
+def setup(tables):
     try:
-        yield create_dynamodb_tables(tables)
+        yield create_tables(tables)
     finally:
-        destroy_dynamodb_tables(tables)
+        destroy_tables(tables)

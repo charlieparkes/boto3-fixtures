@@ -11,7 +11,7 @@ docs: pipenv
 .PHONY: test
 test: dummy_lambda/dist/build.zip pytest
 
-
+.PHONY: rebuild
 rebuild: python/clean/dist clean-test-lambda python/dist build-test-lambda
 
 dummy_lambda/dist/.venv:

@@ -11,3 +11,33 @@ Testing software which touches cloud infrastructure doesn't have to be difficult
 * S3
 * Lambda
 * DynamoDB
+
+
+## Example
+
+```python
+import boto3
+import boto3_fixtures
+import moto
+import pytest
+
+# Create Fixture
+@pytest.fixture
+def sqs():
+    with moto.mock_sqs():
+        with boto3_fixtures.Service("sqs", names=["first-queue", "second-queue"]) as queues:
+            yield queues
+
+
+# Test!
+@pytest.mark.usefixtures("sqs")
+def test_my_code():
+    client = boto3.client("sqs")
+    response = client.list_queues()
+    assert len(response["QueueUrls"]) == 2
+```
+
+
+## WIP
+* Tons more examples
+* `pytest` fixtures

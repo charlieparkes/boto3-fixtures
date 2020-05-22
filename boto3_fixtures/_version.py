@@ -1,6 +1,6 @@
 __title__ = "boto3-fixtures"
 __version__ = "0.0.1"
-__summary__ = ""
+__summary__ = "Python test fixtures for your local AWS cloud stack"
 __author__ = "Charlie Mathews"
 __author_email__ = "charlie@charliemathews.com"
 __maintainer__ = "Charlie Mathews"

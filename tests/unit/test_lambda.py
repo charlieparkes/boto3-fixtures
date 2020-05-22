@@ -1,4 +1,3 @@
-
 import pytest
 
 import boto3_fixtures as b3f

@@ -1,0 +1,51 @@
+services:
+  - docker
+language: python
+python:
+  - "3.6"
+  - "3.7"
+  - "3.8"
+
+stages:
+  - lint
+  - test
+  - deploy
+
+install:
+  - make init
+before_script:
+  # - make python/dist
+  - make build-test-lambda
+script:
+  - make pytest
+after_success:
+  - codecov
+
+jobs:
+  include:
+    - stage: lint
+      python: 3.6
+      services: []
+      before_script: []
+      script: make python/lint
+      after_success: []
+      deploy: []
+
+    - stage: deploy
+      if: tag =~ ^v
+      python: 3.6
+      services: []
+      before_script: []
+      script: make requirements.txt requirements-dev.txt
+      after_success: []
+      deploy:
+        provider: pypi
+        user: "__token__"
+        password:
+          secure: "UH+WbK17YzBRO0S6rkbO9rnuAb8lqTn07NAN5RcVl5AHLiK10ajBhjOdTC+g9+iCXKrGsK9NMz0BnhysD4npHtS3O5kvy+7ymiqmDci9tjmH1U2n9cSMER151AWLiWWPeYenGXeT1c9AgE4ZbNUJcwc1wIiM6ztok81xzJrgjuNDL/fmuKh+CJW6/eJnuCRScbs/WSaUTGDvLXElae8u5Zv69rCdIlkRXPaIOqURn1goXrj53rr6io6f2OeOJurHu96m+gUMdxGGtaA8v+ZKCB44OKZIwxa+BzbNuge/POkl84cLapfLewZDIHDB0DDl8+7yhwQ5CUcIUdW8yJVKjdsOgRtivUTO43KqZGqm0+LeTCXcfF7JexEyagRqHEISrUupUbKSXa/muLh+xqHY3Zfgl2xHbmRqBz7UXnXJgy/5eyz702Mag+SefEtJUv4L1aO53K8KdtsUBhPT1Diy9rcnZsSviuMEQIvPJRdjSwaVkWhBnP7RnnZ4rC3blTr3A6T3IcXcANJxIal3irkAtYwXKwHbpgoh+eQHQVR9oT/BcGqUcKJ7wntsG6pBpy/Q+1kh5xez/xppJ3W9JfIDz65cOBuhUDJAZDtBk3JbbNisbURC+Ako6EUaCFYtvYZ6dsfSkyddmHNUAhQbzKyXUg7EM5+9X49LMztS0+ejG3s="
+        distributions: 'sdist bdist_wheel'
+        skip_existing: true
+        skip_cleanup: true
+        on:
+          tags: true
+          all_branches: true

@@ -1,8 +1,15 @@
 import logging
+import os
 from functools import wraps
 
 import boto3
-from decouple import config
+
+
+def config(name, default=None):
+    try:
+        return os.getenv(name)
+    except Exception:
+        return default
 
 
 def _to_dict(s: str, delimiter: str = ",") -> dict:

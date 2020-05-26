@@ -51,7 +51,7 @@ def sqs_queues():
 @pytest.fixture
 def sqs(sqs_queues):
     with moto.mock_sqs():
-        with boto3_fixtures.Service("sqs", names=["first-queue", "second-queue"]) as queues:
+        with boto3_fixtures.Service("sqs", names=sqs_queues) as queues:
             yield queues
 
 

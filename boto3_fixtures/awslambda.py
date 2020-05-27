@@ -19,6 +19,7 @@ def test():
 
 import json
 from collections import namedtuple
+from typing import Dict, List, Union
 from pathlib import Path
 
 import backoff
@@ -27,15 +28,18 @@ from botocore.exceptions import ClientError
 import boto3_fixtures.contrib.boto3
 from boto3_fixtures import utils
 
+Lambda = namedtuple("Lambda", ["name", "response"])
+
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
 def create_lambda(
-    name: str,
-    runtime: str,
-    role: str = "foobar",
-    handler: str = "main.handler",
-    path: str = "dist/build.zip",
-    environment: dict = {},
+    FunctionName: str,
+    Runtime: str,
+    Role: str = "foobar",
+    Handler: str = "main.handler",
+    Environment: dict = {},
+    Timeout: int = 300,
+    zip_path: str = "dist/build.zip",
     **kwargs,
 ):
     def clean_env(env):
@@ -49,45 +53,44 @@ def create_lambda(
                 env[k] = ""
         return env
 
-    with open(str(Path().absolute() / path), "rb") as f:
-        zipped_code = f.read()
-        utils.call(
+    with open(str(Path().absolute() / zip_path), "rb") as f:
+        resp = utils.call(
             boto3_fixtures.contrib.boto3.client("lambda").create_function,
-            FunctionName=name,
-            Runtime=runtime,
-            Role=role,
-            Handler=handler,
-            Code=dict(ZipFile=zipped_code),
-            Timeout=300,
-            Environment={"Variables": clean_env(environment)},
+            FunctionName=FunctionName,
+            Runtime=Runtime,
+            Role=Role,
+            Handler=Handler,
+            Code=dict(ZipFile=f.read()),
+            Timeout=Timeout,
+            Environment={"Variables": clean_env(Environment)},
+            **kwargs,
         )
+        return Lambda(name=FunctionName, response=resp)
 
 
-def create_lambdas(configs):
-    for c in configs:
-        create_lambda(**c)
+def create_lambdas(lambdas):
+    return {l.name: l for l in [create_lambda(**lam) for lam in lambdas]}
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
-def destroy_lambda(name: str, **kwargs):
+def destroy_lambda(FunctionName: str, **kwargs):
     return utils.call(
-        boto3_fixtures.contrib.boto3.client("lambda").delete_function, FunctionName=name
+        boto3_fixtures.contrib.boto3.client("lambda").delete_function, FunctionName=FunctionName
     )
 
 
-def destroy_lambdas(configs):
-    for c in configs:
-        destroy_lambda(**c)
+def destroy_lambdas(lambdas: Dict[str, Lambda]):
+    return [destroy_lambda(l.name) for _, l in lambdas.items()]
 
 
-def invoke(name: str, payload: dict = {}, **kwargs):
+def invoke(FunctionName: str, Payload: dict = {}, **kwargs):
     defaults = {
         "InvocationType": "RequestResponse",
         "LogType": "Tail",
-        "Payload": json.dumps(payload).encode(),
+        "Payload": json.dumps(Payload).encode(),
     }
     response = boto3_fixtures.contrib.boto3.client("lambda").invoke(
-        FunctionName=name, **{**defaults, **kwargs}
+        FunctionName=FunctionName, **{**defaults, **kwargs}
     )
     utils.check_status(response, keys=["StatusCode"])
     body = response["Payload"].read().decode("utf-8")
@@ -99,13 +102,12 @@ def invoke(name: str, payload: dict = {}, **kwargs):
     return response, body
 
 
-def setup(configs):
-    create_lambdas(configs)
-    return {"configs": configs}
+def setup(lambdas: List[dict]):
+    return {"lambdas": create_lambdas(lambdas)}
 
 
-def teardown(configs):
-    destroy_lambdas(configs)
+def teardown(lambdas: Dict[str, Lambda], **kwrags):
+    destroy_lambdas(lambdas)
 
 
 MockContext = namedtuple("Context", ["function_name"])

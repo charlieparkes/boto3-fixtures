@@ -7,10 +7,11 @@ Simple test fixtures for your local AWS cloud stack of choice
 
 # flake8: noqa
 
+from collections import namedtuple
 from contextlib import ContextDecorator
 from enum import Enum
 
-from boto3_fixtures import awslambda, dynamodb, kinesis, s3, sqs, utils
+from boto3_fixtures import awslambda, contrib, dynamodb, kinesis, s3, sqs, utils
 from boto3_fixtures._version import __version__
 
 SERVICES = Enum("Services", ["awslambda", "dynamodb", "kinesis", "s3", "sqs"])

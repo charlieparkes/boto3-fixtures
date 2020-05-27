@@ -26,12 +26,12 @@ def requests_log_level():
 
 @pytest.fixture(scope="session")
 def kinesis_streams():
-    return ["test-kinesis-stream"]
+    return fixtures.KINESIS
 
 
 @pytest.fixture(scope="class")
 def kinesis_localstack(localstack, kinesis_streams):
-    with b3f.Service("kinesis", kinesis_streams) as streams:
+    with b3f.Service("kinesis", streams=kinesis_streams) as streams:
         yield streams
 
 
@@ -39,18 +39,18 @@ def kinesis_localstack(localstack, kinesis_streams):
 def kinesis(kinesis_streams, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_kinesis():
-            with b3f.Service("kinesis", kinesis_streams) as streams:
+            with b3f.Service("kinesis", streams=kinesis_streams) as streams:
                 yield streams
 
 
 @pytest.fixture(scope="session")
 def sqs_queues():
-    return ["test-sqs-queue"]
+    return fixtures.SQS
 
 
 @pytest.fixture(scope="class")
 def sqs_localstack(localstack, sqs_queues):
-    with b3f.Service("sqs", names=sqs_queues, redrive=True) as queues:
+    with b3f.Service("sqs", queues=sqs_queues) as queues:
         yield queues
 
 
@@ -58,30 +58,21 @@ def sqs_localstack(localstack, sqs_queues):
 def sqs(sqs_queues, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_sqs():
-            with b3f.Service("sqs", names=sqs_queues, redrive=True) as queues:
+            with b3f.Service("sqs", queues=fixtures.SQS) as queues:
                 yield queues
+
+
+# sqs = b3f.contrib.pytest.generate_fixture("sqs", decorator=moto.mock_sqs, scope="class", **fixtures.SQS)
 
 
 @pytest.fixture(scope="session")
 def dynamodb_tables():
-    return [
-        {
-            "AttributeDefinitions": [
-                {"AttributeName": "uri", "AttributeType": "S"},
-                {"AttributeName": "timestamp", "AttributeType": "S"},
-            ],
-            "TableName": "test-dbd-table",
-            "KeySchema": [
-                {"AttributeName": "uri", "KeyType": "HASH"},
-                {"AttributeName": "timestamp", "KeyType": "RANGE"},
-            ],
-        }
-    ]
+    return [t["TableName"] for t in fixtures.DYNAMODB]
 
 
 @pytest.fixture(scope="class")
 def dynamodb_localstack(localstack, dynamodb_tables):
-    with b3f.Service("dynamodb", dynamodb_tables) as tables:
+    with b3f.Service("dynamodb", tables=fixtures.DYNAMODB) as tables:
         yield tables
 
 
@@ -89,18 +80,18 @@ def dynamodb_localstack(localstack, dynamodb_tables):
 def dynamodb(dynamodb_tables, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_dynamodb2():
-            with b3f.Service("dynamodb", dynamodb_tables) as tables:
+            with b3f.Service("dynamodb", tables=fixtures.DYNAMODB) as tables:
                 yield tables
 
 
 @pytest.fixture(scope="session")
 def s3_buckets():
-    return ["test-bucket"]
+    return fixtures.S3
 
 
 @pytest.fixture(scope="class")
 def s3_localstack(localstack, s3_buckets):
-    with b3f.Service("s3", s3_buckets) as buckets:
+    with b3f.Service("s3", buckets=fixtures.S3) as buckets:
         yield buckets
 
 
@@ -108,7 +99,7 @@ def s3_localstack(localstack, s3_buckets):
 def s3(s3_buckets, environment):
     with b3f.utils.set_env(environment()):
         with moto.mock_s3():
-            with b3f.Service("s3", s3_buckets) as buckets:
+            with b3f.Service("s3", buckets=fixtures.S3) as buckets:
                 yield buckets
 
 
@@ -132,31 +123,24 @@ def set_environment(environment):
 
 @pytest.fixture(scope="session")
 def lambda_functions():
-    return [
-        {
-            "name": "my_lambda",
-            "path": "dummy_lambda/dist/build.zip",
-            "runtime": "python3.6",
-            "environment": {"test_bool_env_var": True,},
-        }
-    ]
+    return fixtures.LAMBDA
 
 
 @pytest.fixture(scope="class")
 def lam_localstack(localstack, lambda_functions, environment):
     for lam in lambda_functions:
-        lam["environment"] = {**environment(), **lam.get("environment", {})}
+        lam["Environment"] = {**environment(), **lam.get("Environment", {})}
 
-    with b3f.Service("awslambda", lambda_functions):
+    with b3f.Service("awslambda", lambdas=lambda_functions):
         yield
 
 
 @pytest.fixture(scope="class")
 def lam(lambda_functions, environment):
     for lam in lambda_functions:
-        lam["environment"] = {**environment(), **lam.get("environment", {})}
+        lam["Environment"] = {**environment(), **lam.get("Environment", {})}
 
     with b3f.utils.set_env(environment()):
         with moto.mock_lambda():
-            with b3f.Service("awslambda", lambda_functions):
+            with b3f.Service("awslambda", lambdas=lambda_functions):
                 yield

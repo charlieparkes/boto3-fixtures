@@ -14,62 +14,88 @@ def sqs(localstack, sqs_queues):
 """
 
 import json
+from collections import namedtuple
+from typing import Dict, List, Union
 
 import backoff
 from botocore.exceptions import ClientError
 
 import boto3_fixtures.contrib.boto3
 from boto3_fixtures import utils
+from boto3_fixtures.contrib import mindictive as mdict
 from boto3_fixtures.contrib.sqs import get_queue_arn
 from boto3_fixtures.utils import backoff_check
 
+SQSQueue = namedtuple("Queue", ["name", "url", "arn", "response"])
+
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
-def create_queue(q, dlq_url=None):
+def create_queue(QueueName, **kwargs):
     client = boto3_fixtures.contrib.boto3.client("sqs")
-    attrs = {}
-    if dlq_url:
-        attrs["RedrivePolicy"] = json.dumps(
-            {"deadLetterTargetArn": get_queue_arn(dlq_url), "maxReceiveCount": 1}
-        )
-    resp = utils.call(client.create_queue, QueueName=q, Attributes=attrs)
+    resp = utils.call(client.create_queue, QueueName=QueueName, **kwargs)
     utils.call(
         backoff_check,
         func=lambda: boto3_fixtures.contrib.boto3.client("sqs").get_queue_url(
-            QueueName=q
+            QueueName=QueueName
         ),
     )
-    return resp["QueueUrl"]
+    return SQSQueue(
+        name=QueueName,
+        url=resp["QueueUrl"],
+        arn=get_queue_arn(resp["QueueUrl"]),
+        response=resp,
+    )
 
 
-def create_queues(names: list, redrive=False):
-    resp = {}
-    for n in names:
-        if redrive:
-            dlq_name = f"{n}-dlq"
-            resp[dlq_name] = create_queue(dlq_name)
-            resp[n] = create_queue(n, dlq_url=resp[dlq_name])
-        else:
-            resp[n] = create_queue(n)
-
-    return resp
+def create_queues(queues: List[dict]):
+    return {q.name: q for q in [create_queue(**config) for config in queues]}
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_tries=3)
-def destroy_queue(url):
+def destroy_queue(QueueUrl, **kwargs):
     return utils.call(
-        boto3_fixtures.contrib.boto3.client("sqs").delete_queue, QueueUrl=url
+        boto3_fixtures.contrib.boto3.client("sqs").delete_queue, QueueUrl=QueueUrl
     )
 
 
-def destroy_queues(queues: dict):
-    return {name: destroy_queue(url) for name, url in queues.items()}
+def destroy_queues(queues: Dict[str, SQSQueue]):
+    return [destroy_queue(QueueUrl=q.url) for _, q in queues.items()]
 
 
-def setup(names: list, redrive=False):
-    queues = create_queues(names, redrive=redrive)
-    return {"queues": queues}
+def setup(queues: Union[List[str], List[dict]], **kwargs):
+    if isinstance(queues, list):
+        queues = [{"QueueName": name, **kwargs} for name in queues]
+
+    def _dlq_name(queue_name):
+        return f"{queue_name}-dlq"
+
+    # Find queues that need a DLQ created by checking for RedrivePolicy=None
+    redrive_key = ["Attributes", "RedrivePolicy"]
+
+    # Create DLQs
+    dlqs_to_create = [
+        {"QueueName": _dlq_name(q["QueueName"])}
+        for q in queues
+        if isinstance(mdict.get_nested(q, redrive_key, None), dict)
+    ]
+    dlqs = create_queues(dlqs_to_create)
+
+    # Update redrive policies with ARNs of DLQs
+    defaults = {"maxReceiveCount": 1}
+    policy = mdict.get_nested(kwargs, redrive_key, {})
+    for q in queues:
+        if isinstance(mdict.get_nested(q, redrive_key, None), dict):
+            name = q["QueueName"]
+            new_policy = {
+                **defaults,
+                **policy,
+                "deadLetterTargetArn": dlqs[_dlq_name(name)].arn,
+            }
+            mdict.set_nested(
+                q, redrive_key, json.dumps(new_policy),
+            )
+    return {"queues": create_queues(queues)}
 
 
-def teardown(queues):
+def teardown(queues: Dict[str, SQSQueue], **kwargs):
     return destroy_queues(queues)

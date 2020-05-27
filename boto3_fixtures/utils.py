@@ -20,10 +20,12 @@ def batch(iterable, n=1):
         yield iterable[ndx : min(ndx + n, iter_len)]
 
 
-def _set_env(env):
+def _set_env(env, overwrite=True):
     state = {}
     for k, v in env.items():
         state[k] = os.environ[k] if k in os.environ else None
+        if state[k] is None and overwrite is False:
+            continue
         os.environ[k] = str(v)
         logging.getLogger().debug(f"os.environ[{k}] = {v}")
     return state
@@ -38,7 +40,7 @@ def _reset_env(env, state):
 
 
 @contextmanager
-def set_env(env):
+def set_env(env, overwrite=True):
     state = {}
     try:
         state = _set_env(env)
@@ -108,7 +110,7 @@ def environment(
         vars.update({clean(s): s for s in kinesis_streams})
         vars.update({clean(q): q for q in sqs_queues})
         vars.update({clean(q): q for q in s3_buckets})
-        vars.update({clean(t["TableName"]): t["TableName"] for t in dynamodb_tables})
+        vars.update({clean(t): t for t in dynamodb_tables})
         will_overwrite = list(set(vars.keys()) & set(kwargs.keys()))
         if will_overwrite:
             logging.getLogger().warning(

@@ -19,8 +19,8 @@ def test():
 
 import json
 from collections import namedtuple
-from typing import Dict, List, Union
 from pathlib import Path
+from typing import Dict, List, Union
 
 import backoff
 from botocore.exceptions import ClientError
@@ -75,7 +75,8 @@ def create_lambdas(lambdas):
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
 def destroy_lambda(FunctionName: str, **kwargs):
     return utils.call(
-        boto3_fixtures.contrib.boto3.client("lambda").delete_function, FunctionName=FunctionName
+        boto3_fixtures.contrib.boto3.client("lambda").delete_function,
+        FunctionName=FunctionName,
     )
 
 

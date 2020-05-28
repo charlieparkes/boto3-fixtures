@@ -14,18 +14,23 @@ from enum import Enum
 from boto3_fixtures import awslambda, contrib, dynamodb, kinesis, s3, sqs, utils
 from boto3_fixtures._version import __version__
 
-SERVICES = Enum("Services", ["awslambda", "dynamodb", "kinesis", "s3", "sqs"])
+SERVICES = {
+    "lambda": awslambda,
+    "dynamodb": dynamodb,
+    "kinesis": kinesis,
+    "s3": s3,
+    "sqs": sqs,
+}
 
 
 class Service(ContextDecorator):
     def __init__(self, service: str, *args, **kwargs):
         try:
-            assert SERVICES[service]
-            self.service = globals().get(service)
+            self.service = SERVICES[service.lower()]
             self.args = args
             self.kwargs = kwargs
             self.state = None
-        except KeyError:
+        except KeyError as e:
             raise Exception(f"Service '{service}' is not supported.") from e
 
     def __enter__(self):

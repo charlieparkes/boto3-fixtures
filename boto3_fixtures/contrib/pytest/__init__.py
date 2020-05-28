@@ -11,14 +11,13 @@ except ImportError:
 
 
 def generate_fixture(
-    service_name: str,
+    service: str,
     region_name="us-east-1",
-    decorator=None,
     scope="function",
     autouse=False,
     **kwargs
 ):
-    """Create a pytest fixture which will wrap setup/teardown of a service in a context manager.
+    """Create a pytest fixture which will wrap setup/teardown of a service.
 
     Args:
         scope (str, optional): The pytest scope which this fixture will use.
@@ -30,19 +29,14 @@ def generate_fixture(
 
     """
 
-    def _get_client():
-        with boto3_fixtures.Service(service_name, **kwargs):
-            yield boto3.client(service_name, region_name)
+    @pytest.fixture(scope=scope)
+    def aws():
+        pass
 
     @pytest.fixture(scope=scope, autouse=autouse)
-    def _fixture():
-        with boto3_fixtures.utils.set_env(
-            {"AWS_DEFAULT_REGION": region_name}, overwrite=False
-        ):
-            if decorator:
-                with decorator():
-                    yield _get_client()
-            else:
-                yield _get_client()
+    def _fixture(request, aws):
+        # with boto3_fixtures.utils.set_env({"AWS_DEFAULT_REGION": region_name}):
+        with boto3_fixtures.Service(service, **kwargs) as state:
+            yield state
 
     return _fixture

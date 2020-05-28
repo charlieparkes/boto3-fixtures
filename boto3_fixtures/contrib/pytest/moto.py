@@ -7,43 +7,52 @@ import boto3_fixtures as b3f
 
 try:
     import moto
-except ImportError:
-    raise Exception("boto3_fixtures.contrib.pytest requires the moto package")
-try:
     import pytest
-except ImportError:
-    raise Exception("boto3_fixtures.contrib.pytest requires the pytest package")
+except ImportError as e:
+    raise Exception(
+        "boto3_fixtures.contrib.pytest requires the packages moto and pytest"
+    ) from e
 
 
 def generate_fixture(
-    service_names: List[str],
+    services: List[str],
     region_name="us-east-1",
-    fixtures: list = [],
     scope="function",
     autouse=False,
     **kwargs
 ):
     MOCKS = {
-        b3f.SERVICES.SQS: moto.mock_sqs,
-        b3f.SERVICES.DYNAMODB: moto.mock_dynamodb2,
-        b3f.SERVICES.KINESIS: moto.mock_kinesis,
-        b3f.SERVICES.S3: moto.mock_s3,
-        b3f.SERVICES.LAMBDA: moto.mock_lambda,
-    }
-    ENV = {
-        "AWS_DEFAULT_REGION": region_name,
-        # "AWS_ACCESS_KEY_ID": "moto",
-        # "AWS_SECRET_ACCESS_KEY": "moto",
-        # "AWS_SECURITY_TOKEN": "moto",
-        # "AWS_SESSION_TOKEN": "moto",
+        "sqs": moto.mock_sqs,
+        "dynamodb": moto.mock_dynamodb2,
+        "kinesis": moto.mock_kinesis,
+        "s3": moto.mock_s3,
+        "lambda": moto.mock_lambda,
     }
 
     @pytest.fixture(scope=scope, autouse=autouse)
-    def _fixture(*fixtures):
+    def _fixture():
+        ENV = {
+            "AWS_DEFAULT_REGION": region_name,
+            "AWS_ACCESS_KEY_ID": "testing",
+            "AWS_SECRET_ACCESS_KEY": "testing",
+            "AWS_SECURITY_TOKEN": "testing",
+            "AWS_SESSION_TOKEN": "testing",
+        }
+        try:
+            managers = [MOCKS[s.lower()] for s in services]
+        except KeyError as e:
+            raise Exception("Service unsupported.") from e
         with b3f.utils.set_env(ENV, overwrite=False):
             with ExitStack() as stack:
-                for mgr in [MOCKS[s] for s in service_names]:
+                for mgr in managers:
                     stack.enter_context(mgr())
                 yield
+            # managers = []
+            # for mgr in [MOCKS[s.lower()] for s in services]:
+            #     managers.append(mgr())
+            #
+            # [mgr.start() for mgr in managers]
+            # yield
+            # [mgr.stop() for mgr in managers]
 
     return _fixture

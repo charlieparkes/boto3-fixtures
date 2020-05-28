@@ -49,7 +49,7 @@ def with_endpoint_url(func):
             logging.getLogger().warning(
                 f"Something went wrong when generating a boto3 {func.__name__}: {e.__class__.__name__} {e}"
             )
-            return func(service_name, *args, **kwargs)
+            raise  # return func(service_name, *args, **kwargs)
 
     return wrapper
 

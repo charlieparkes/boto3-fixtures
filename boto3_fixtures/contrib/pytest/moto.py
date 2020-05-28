@@ -47,12 +47,5 @@ def generate_fixture(
                 for mgr in managers:
                     stack.enter_context(mgr())
                 yield
-            # managers = []
-            # for mgr in [MOCKS[s.lower()] for s in services]:
-            #     managers.append(mgr())
-            #
-            # [mgr.start() for mgr in managers]
-            # yield
-            # [mgr.stop() for mgr in managers]
 
     return _fixture

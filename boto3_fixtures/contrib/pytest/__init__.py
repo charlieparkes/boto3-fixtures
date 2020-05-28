@@ -11,11 +11,7 @@ except ImportError:
 
 
 def generate_fixture(
-    service: str,
-    region_name="us-east-1",
-    scope="function",
-    autouse=False,
-    **kwargs
+    service: str, region_name="us-east-1", scope="function", autouse=False, **kwargs
 ):
     """Create a pytest fixture which will wrap setup/teardown of a service.
 

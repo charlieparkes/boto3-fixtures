@@ -1,18 +1,3 @@
-"""
-Example Usage
-
-```python
-@pytest.fixture(scope="session")
-def kinesis_streams():
-    return ["TEST_KINESIS_STREAM"]
-
-@pytest.fixture(scope="class")
-def kinesis(localstack, kinesis_streams):
-    with boto3_fixtures.setup(kinesis_streams) as streams:
-        yield streams
-```
-"""
-
 from collections import namedtuple
 from typing import Dict, List, Union
 

@@ -1,22 +1,3 @@
-"""
-Example Usage
-
-```python
-@pytest.fixture(scope="class")
-def lam(localstack, environment):
-    with boto3_fixtures.setup(
-                runtime="python3.6",
-                environment=environment(MOCK_AWS=True),
-            ) as lam:
-        yield lam
-
-@pytest.mark.usefixtures("lam")
-def test():
-    payload = [{...}, {...}]
-    response, body = invoke(name="my_lambda", payload=sqs_payload(messages))
-```
-"""
-
 import json
 from collections import namedtuple
 from pathlib import Path

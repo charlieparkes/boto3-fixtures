@@ -1,14 +1,3 @@
-"""
-Example Usage:
-
-```python
-@pytest.fixture(scope="class")
-def s3(localstack, s3_buckets):
-    with boto3_fixtures.setup_s3(s3_buckets) as buckets:
-        yield buckets
-```
-"""
-
 from collections import namedtuple
 from typing import Dict, List, Union
 

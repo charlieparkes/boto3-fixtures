@@ -1,18 +1,3 @@
-"""
-Example Usage
-
-```python
-@pytest.fixture(scope="session")
-def sqs_queues():
-    return ["TEST_SQS_QUEUE"]
-
-@pytest.fixture(scope="class")
-def sqs(localstack, sqs_queues):
-    with boto3_fixtures.setup_s3(s3_buckets) as buckets:
-        yield buckets
-```
-"""
-
 import json
 from collections import namedtuple
 from typing import Dict, List, Union

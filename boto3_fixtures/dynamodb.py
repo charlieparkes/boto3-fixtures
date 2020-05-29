@@ -1,30 +1,3 @@
-"""
-Example Usage
-
-```python
-@pytest.fixture(scope="session")
-def dynamodb_tables():
-    return [
-        {
-            "AttributeDefinitions": [
-                {"AttributeName": "uri", "AttributeType": "S"},
-                {"AttributeName": "timestamp", "AttributeType": "S"},
-            ],
-            "TableName": "my-dbd-table",
-            "KeySchema": [
-                {"AttributeName": "uri", "KeyType": "HASH"},
-                {"AttributeName": "timestamp", "KeyType": "RANGE"},
-            ],
-        }
-    ]
-
-@pytest.fixture(scope="class")
-def dynamodb(localstack, dynamodb_tables):
-    with boto3_fixtures.setup_dynamodb(dynamodb_tables) as tables:
-        yield tables
-```
-"""
-
 from collections import namedtuple
 from typing import Dict, List
 

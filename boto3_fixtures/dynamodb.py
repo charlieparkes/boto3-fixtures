@@ -25,50 +25,55 @@ def dynamodb(localstack, dynamodb_tables):
 ```
 """
 
+from collections import namedtuple
+from typing import Dict, List
 
 import backoff
 import boto3
 from botocore.exceptions import ClientError
 
 import boto3_fixtures.contrib.boto3
+import boto3_fixtures.contrib.mindictive as mdict
 from boto3_fixtures import utils
+
+DynamoDBTable = namedtuple("Table", ["name", "arn", "response"])
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
-def create_table(config):
-    config.update({"BillingMode": "PAY_PER_REQUEST"})
-    return utils.call(boto3.client("dynamodb").create_table, **config)
+def create_table(TableName: str, **kwargs):
+    kwargs.update({"BillingMode": "PAY_PER_REQUEST"})
+    resp = utils.call(
+        boto3.client("dynamodb").create_table, TableName=TableName, **kwargs
+    )
+    name = mdict.get_nested(resp, ["TableDescription", "TableName"])
+    arn = mdict.get_nested(resp, ["TableDescription", "TableArn"])
+    return DynamoDBTable(name=name, arn=arn, response=resp)
 
 
-def create_tables(dynamodb_tables):
+def create_tables(tables: list):
     client = boto3_fixtures.contrib.boto3.client("dynamodb")
-    for table in dynamodb_tables:
-        assert create_table(table)
-    for table in dynamodb_tables:
-        name = table["TableName"]
+    _tables = [create_table(**table) for table in tables]
+    for table in _tables:
         client.get_waiter("table_exists").wait(
-            TableName=name, WaiterConfig={"Delay": 1, "MaxAttempts": 30}
+            TableName=table.name, WaiterConfig={"Delay": 1, "MaxAttempts": 30}
         )
-        assert utils.call(client.describe_table, TableName=name)
-    return [t["TableName"] for t in dynamodb_tables]
+        assert utils.call(client.describe_table, TableName=table.name)
+    return {t.name: t for t in _tables}
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_tries=3)
-def destroy_table(config):
+def destroy_table(TableName: str, **kwargs):
     client = boto3_fixtures.contrib.boto3.client("dynamodb")
-    return utils.call(client.delete_table, TableName=config["TableName"])
+    return utils.call(client.delete_table, TableName=TableName)
 
 
-def destroy_tables(dynamodb_tables):
-    boto3_fixtures.contrib.boto3.client("dynamodb")
-    for table in dynamodb_tables:
-        destroy_table(table)
+def destroy_tables(tables: Dict[str, DynamoDBTable]):
+    return [destroy_table(table.name) for _, table in tables.items()]
 
 
-def setup(tables):
-    create_tables(tables)
-    return {"tables": tables}
+def setup(tables: List[dict]):
+    return {"tables": create_tables(tables)}
 
 
-def teardown(tables):
+def teardown(tables: Dict[str, DynamoDBTable], **kwargs):
     destroy_tables(tables)

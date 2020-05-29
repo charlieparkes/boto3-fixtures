@@ -9,6 +9,8 @@ def s3(localstack, s3_buckets):
 ```
 """
 
+from collections import namedtuple
+from typing import Dict, List, Union
 
 import backoff
 from botocore.exceptions import ClientError, ConnectionClosedError
@@ -16,37 +18,40 @@ from botocore.exceptions import ClientError, ConnectionClosedError
 import boto3_fixtures.contrib.boto3
 from boto3_fixtures import utils
 
-
-@backoff.on_exception(backoff.expo, (ClientError, ConnectionClosedError), max_time=30)
-def create_bucket(b: str):
-    client = boto3_fixtures.contrib.boto3.client("s3")
-    resp = utils.call(client.create_bucket, Bucket=b)
-    client.get_waiter("bucket_exists").wait(Bucket=b)
-    return resp
-
-
-def create_buckets(names: list):
-    return {n: create_bucket(n) for n in names}
+S3Bucket = namedtuple("Bucket", ["name", "response"])
 
 
 @backoff.on_exception(backoff.expo, (ClientError, ConnectionClosedError), max_time=30)
-def destroy_bucket(b: str):
+def create_bucket(Bucket: str, **kwargs):
     client = boto3_fixtures.contrib.boto3.client("s3")
-    objects = boto3_fixtures.contrib.boto3.resource("s3").Bucket(b).objects.all()
-    [utils.call(client.delete_object, Bucket=b, Key=o.key) for o in objects]
-    resp = utils.call(client.delete_bucket, Bucket=b)
-    client.get_waiter("bucket_not_exists").wait(Bucket=b)
+    resp = utils.call(client.create_bucket, Bucket=Bucket, **kwargs)
+    client.get_waiter("bucket_exists").wait(Bucket=Bucket)
+    return S3Bucket(name=Bucket, response=resp)
+
+
+def create_buckets(buckets: List[dict]):
+    return {b.name: b for b in [create_bucket(**bucket) for bucket in buckets]}
+
+
+@backoff.on_exception(backoff.expo, (ClientError, ConnectionClosedError), max_time=30)
+def destroy_bucket(Bucket: str, **kwargs):
+    client = boto3_fixtures.contrib.boto3.client("s3")
+    objects = boto3_fixtures.contrib.boto3.resource("s3").Bucket(Bucket).objects.all()
+    [utils.call(client.delete_object, Bucket=Bucket, Key=o.key) for o in objects]
+    resp = utils.call(client.delete_bucket, Bucket=Bucket)
+    client.get_waiter("bucket_not_exists").wait(Bucket=Bucket)
     return resp
 
 
-def destroy_buckets(names: list):
-    return {n: destroy_bucket(n) for n in names}
+def destroy_buckets(buckets: Dict[str, S3Bucket]):
+    return [destroy_bucket(b.name) for _, b in buckets.items()]
 
 
-def setup(names):
-    create_buckets(names)
-    return {"names": names}
+def setup(buckets: Union[List[str], List[dict]], **kwargs):
+    if isinstance(buckets, list):
+        buckets = [{"Bucket": name, **kwargs} for name in buckets]
+    return {"buckets": create_buckets(buckets)}
 
 
-def teardown(names):
-    destroy_buckets(names)
+def teardown(buckets: Dict[str, S3Bucket], **kwargs):
+    destroy_buckets(buckets)

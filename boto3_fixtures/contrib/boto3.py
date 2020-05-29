@@ -1,8 +1,15 @@
 import logging
+import os
 from functools import wraps
 
 import boto3
-from decouple import config
+
+
+def config(name, default=None):
+    try:
+        return os.getenv(name)
+    except Exception:
+        return default
 
 
 def _to_dict(s: str, delimiter: str = ",") -> dict:
@@ -42,7 +49,7 @@ def with_endpoint_url(func):
             logging.getLogger().warning(
                 f"Something went wrong when generating a boto3 {func.__name__}: {e.__class__.__name__} {e}"
             )
-            return func(service_name, *args, **kwargs)
+            raise  # return func(service_name, *args, **kwargs)
 
     return wrapper
 

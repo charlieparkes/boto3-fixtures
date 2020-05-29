@@ -29,8 +29,7 @@ def check_dynamodb_fixtures(dynamodb_tables):
     client = boto3.client("dynamodb")
     resp = utils.call(utils.backoff_check, func=lambda: client.list_tables())
     for table in dynamodb_tables:
-        name = table["TableName"]
-        assert name in resp["TableNames"]
+        assert table in resp["TableNames"]
 
 
 def check_s3_fixtures(s3_buckets):
@@ -44,6 +43,6 @@ def check_s3_fixtures(s3_buckets):
 def check_lambda_fixtures(lambda_functions):
     client = boto3.client("lambda")
     resp = utils.call(utils.backoff_check, func=lambda: client.list_functions())
-    lambda_names = {l["FunctionName"]: l for l in resp["Functions"]}
+    lambda_names = {lam["FunctionName"]: lam for lam in resp["Functions"]}
     for lam in lambda_functions:
-        assert lam["name"] in lambda_names
+        assert lam["FunctionName"] in lambda_names

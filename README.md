@@ -35,39 +35,14 @@ Combine this with a local testing stack of your choice (moto, localstack).
 ```python
 import boto3_fixtures, moto
 
-def test_my_code():
-    with moto.mock_sqs():
-        with boto3_fixtures.Service("sqs", queues=["first-queue", "second-queue"]) as svc:
-          # ...
+with moto.mock_sqs():
+    with boto3_fixtures.Service("sqs", queues=["first-queue", "second-queue"]) as svc:
+      # ...
 ```
-
-Use pytest fixtures to simplify this even further.
-
-```python
-import pytest, boto3_fixtures, moto
-
-@pytest.fixture
-def sqs_queues():
-    return ["first-queue", "second-queue"]
-
-@pytest.fixture
-def sqs(sqs_queues):
-    with moto.mock_sqs():
-        with boto3_fixtures.Service("sqs", queues=sqs_queues) as svc:
-            yield
-
-
-@pytest.mark.usefixtures("sqs")
-def test_my_code():
-    # Queues exist for the duration of this test (or whatever scope you set on the fixture)
-    pass
-```
-
-Even better, we've boiled all of this down into pytest fixture generators!
 
 ### Generating Pytest Fixtures
 
-The `b3f.contrib.pytest.generate_fixture` function generates services fixtures which assume a fixture called `aws` exists to setup/teardown your local cloud stack.
+To make your life even easier, we've boiled all of the above down into pytest fixture generators.
 
 ```python
 import boto3_fixtures as b3f
@@ -82,6 +57,11 @@ kinesis = b3f.contrib.pytest.service_fixture("kinesis", scope="class", streams=f
 dynamodb = b3f.contrib.pytest.service_fixture("dynamodb", scope="class", tables=fixtures.DYNAMODB)
 s3 = b3f.contrib.pytest.service_fixture("s3", scope="class", buckets=fixtures.S3)
 lam = b3f.contrib.pytest.service_fixture("lambda", scope="class", lambdas=fixtures.LAMBDA)
+
+
+# Example Usage
+def test_my_code(sqs):
+    boto3.client("sqs").list_queues()
 ```
 
 #### The `aws()` fixture

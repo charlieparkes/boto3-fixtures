@@ -1,5 +1,6 @@
 from contextlib import ContextDecorator
 
+import boto3_fixtures as b3f
 from boto3_fixtures import awslambda, dynamodb, kinesis, s3, sqs
 
 SERVICES = {
@@ -19,7 +20,7 @@ class Service(ContextDecorator):
             self.kwargs = kwargs
             self.state = None
         except KeyError as e:
-            raise Exception(f"Service '{service}' is not supported.") from e
+            raise b3f.exceptions.UnsupportedServiceException(f"Service '{service}' is not supported.") from e
 
     def __enter__(self):
         self.state = self.service.setup(*self.args, **self.kwargs)

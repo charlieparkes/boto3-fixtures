@@ -1,0 +1,2 @@
+class UnsupportedServiceException(Exception):
+    pass

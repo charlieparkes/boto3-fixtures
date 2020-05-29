@@ -24,7 +24,7 @@ def _set_env(env, overwrite=True):
     state = {}
     for k, v in env.items():
         state[k] = os.environ[k] if k in os.environ else None
-        if state[k] is None and overwrite is False:
+        if state[k] is not None and overwrite is False:
             continue
         os.environ[k] = str(v)
         logging.getLogger().debug(f"os.environ[{k}] = {v}")
@@ -43,7 +43,7 @@ def _reset_env(env, state):
 def set_env(env, overwrite=True):
     state = {}
     try:
-        state = _set_env(env)
+        state = _set_env(env, overwrite)
         yield
     finally:
         _reset_env(env, state)

@@ -31,6 +31,10 @@ lam = b3f.contrib.pytest.generate_fixture(
     "lambda", scope="class", lambdas=fixtures.LAMBDA,
 )
 
+@pytest.fixture(scope="class")
+def aws(moto):
+    pass
+
 
 @pytest.fixture(scope="session", autouse=True)
 def requests_log_level():

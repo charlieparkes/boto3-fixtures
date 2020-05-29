@@ -20,7 +20,7 @@ def test():
 import json
 from collections import namedtuple
 from pathlib import Path
-from typing import Dict, List, Union
+from typing import Dict, List
 
 import backoff
 from botocore.exceptions import ClientError
@@ -69,7 +69,7 @@ def create_lambda(
 
 
 def create_lambdas(lambdas):
-    return {l.name: l for l in [create_lambda(**lam) for lam in lambdas]}
+    return {lam.name: lam for lam in [create_lambda(**lam) for lam in lambdas]}
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)

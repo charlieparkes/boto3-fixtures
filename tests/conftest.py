@@ -17,19 +17,20 @@ stack_config = {
 }
 
 localstack = pytest_localstack.patch_fixture(**stack_config)
-moto = b3f.contrib.pytest.moto.generate_fixture(**stack_config)
+moto = b3f.contrib.pytest.moto_fixture(**stack_config)
 
-sqs = b3f.contrib.pytest.generate_fixture("sqs", scope="class", queues=fixtures.SQS)
-kinesis = b3f.contrib.pytest.generate_fixture(
+sqs = b3f.contrib.pytest.service_fixture("sqs", scope="class", queues=fixtures.SQS)
+kinesis = b3f.contrib.pytest.service_fixture(
     "kinesis", scope="class", streams=fixtures.KINESIS,
 )
-dynamodb = b3f.contrib.pytest.generate_fixture(
+dynamodb = b3f.contrib.pytest.service_fixture(
     "dynamodb", scope="class", tables=fixtures.DYNAMODB,
 )
-s3 = b3f.contrib.pytest.generate_fixture("s3", scope="class", buckets=fixtures.S3)
-lam = b3f.contrib.pytest.generate_fixture(
+s3 = b3f.contrib.pytest.service_fixture("s3", scope="class", buckets=fixtures.S3)
+lam = b3f.contrib.pytest.service_fixture(
     "lambda", scope="class", lambdas=fixtures.LAMBDA,
 )
+
 
 @pytest.fixture(scope="class")
 def aws(moto):

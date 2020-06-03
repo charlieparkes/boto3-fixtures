@@ -80,7 +80,7 @@ aws = pytest_localstack.patch_fixture(
 # Example: moto via boto3-fixtures
 import boto3_fixtures as b3f
 
-aws = b3f.contrib.pytest.moto.generate_fixture(
+aws = b3f.contrib.pytest.moto_fixture(
   service=["sqs"],
   scope="class",
 )
@@ -147,7 +147,7 @@ stack_config = {
 }
 
 localstack = pytest_localstack.patch_fixture(**stack_config)
-moto = b3f.contrib.pytest.moto.generate_fixture(**stack_config)
+moto = b3f.contrib.pytest.moto_fixture(**stack_config)
 
 @pytest.fixture(scope="class")
 def aws(moto):

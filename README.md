@@ -48,7 +48,7 @@ To make your life even easier, we've boiled all of the above down into pytest fi
 import boto3_fixtures as b3f
 
 aws = b3f.contrib.pytest.moto_fixture(
-  service=["dynamodb", "kinesis", "sqs", "s3", "lambda"],
+  services=["dynamodb", "kinesis", "sqs", "s3", "lambda"],
   scope="class",
 )
 
@@ -73,7 +73,7 @@ To ensure your mocked cloud is a dependency of your service fixtures, boto3-fixt
 import pytest_localstack
 
 aws = pytest_localstack.patch_fixture(
-  service=["sqs"],
+  services=["sqs"],
   scope="class",
 )
 
@@ -81,7 +81,7 @@ aws = pytest_localstack.patch_fixture(
 import boto3_fixtures as b3f
 
 aws = b3f.contrib.pytest.moto_fixture(
-  service=["sqs"],
+  services=["sqs"],
   scope="class",
 )
 ```

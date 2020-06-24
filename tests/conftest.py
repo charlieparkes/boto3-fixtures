@@ -52,7 +52,7 @@ def kinesis_streams():
 
 @pytest.fixture(scope="session")
 def sqs_queues():
-    return fixtures.SQS
+    return [q["QueueName"] if isinstance(q, dict) else q for q in fixtures.SQS]
 
 
 @pytest.fixture(scope="session")

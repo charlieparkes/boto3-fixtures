@@ -48,8 +48,10 @@ def destroy_queues(queues: Dict[str, SQSQueue]):
 
 
 def setup(queues: Union[List[str], List[dict]], **kwargs):
-    if isinstance(queues, list):
-        queues = [{"QueueName": name, **kwargs} for name in queues]
+    queues = [
+        {"QueueName": queue, **kwargs} if isinstance(queue, str) else queue
+        for queue in queues
+    ]
 
     def _dlq_name(queue_name):
         return f"{queue_name}-dlq"

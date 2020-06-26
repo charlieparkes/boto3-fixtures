@@ -4,7 +4,11 @@ ENV = {"AWS_DEFAULT_REGION": "us-east-1", "FUNCTION_NAME": "my_lambda"}
 # AWS Fixtures
 S3 = ["first-bucket", "second-bucket"]
 
-SQS = ["first-queue", "second-queue"]
+SQS = [
+    "first-queue",
+    "second-queue",
+    {"QueueName": "third-queue", "Attributes": {"RedrivePolicy": {}}},
+]
 
 KINESIS = ["first-stream", "second-stream"]
 

@@ -9,7 +9,7 @@ docs: pipenv
 	$(WITH_PIPENV) $(MAKE) -C docs clean html
 
 .PHONY: test
-test: dummy_lambda/dist/build.zip pytest
+test: dummy_lambda/dist/build.zip pytest/k/unit pytest/k/integration
 
 .PHONY: rebuild
 rebuild: python/clean/dist clean-test-lambda python/dist build-test-lambda

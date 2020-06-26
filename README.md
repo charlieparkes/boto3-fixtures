@@ -158,3 +158,7 @@ def aws(moto):
 def aws(localstack):
     pass
 ```
+
+## Known Issues
+
+* Using both pytest-localstack and moto in the same project may break if the pytest-localstack tests run first. It's suspected this is due to an issue with cleanup with the pytest-localstack session, but is this is still under investigation.

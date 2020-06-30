@@ -78,7 +78,7 @@ def s3_buckets():
 
 
 @pytest.fixture(scope="class")
-def environment(sqs_queues, kinesis_streams, dynamodb_tables, s3_buckets):
+def environment(sqs_queues, kinesis_streams, dynamodb_tables, s3_buckets, sns_topics):
     # Ideally, nothing should have to "spin up" to run this fixture (for example, localstack)
     return b3f.utils.environment(
         fixtures=fixtures.ENV,
@@ -86,6 +86,7 @@ def environment(sqs_queues, kinesis_streams, dynamodb_tables, s3_buckets):
         kinesis_streams=kinesis_streams,
         dynamodb_tables=dynamodb_tables,
         s3_buckets=s3_buckets,
+        sns_topics=sns_topics,
     )
 
 

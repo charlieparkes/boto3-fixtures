@@ -97,6 +97,7 @@ def environment(
     kinesis_streams: list = [],
     dynamodb_tables: list = [],
     s3_buckets: list = [],
+    sns_topics: list = [],
 ):
     def clean(s):
         return s.upper().replace("-", "_")
@@ -111,6 +112,7 @@ def environment(
         vars.update({clean(q): q for q in sqs_queues})
         vars.update({clean(q): q for q in s3_buckets})
         vars.update({clean(t): t for t in dynamodb_tables})
+        vars.update({clean(tpc): tpc for tpc in sns_topics})
         will_overwrite = list(set(vars.keys()) & set(kwargs.keys()))
         if will_overwrite:
             logging.getLogger().warning(

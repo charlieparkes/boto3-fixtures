@@ -57,6 +57,7 @@ kinesis = b3f.contrib.pytest.service_fixture("kinesis", scope="class", streams=f
 dynamodb = b3f.contrib.pytest.service_fixture("dynamodb", scope="class", tables=fixtures.DYNAMODB)
 s3 = b3f.contrib.pytest.service_fixture("s3", scope="class", buckets=fixtures.S3)
 lam = b3f.contrib.pytest.service_fixture("lambda", scope="class", lambdas=fixtures.LAMBDA)
+sns = b3f.contrib.pytest.service_fixture("sns", scope="class", topics=fixtures.TOPICS)
 
 
 # Example Usage
@@ -97,6 +98,7 @@ Configuration of a service may be either a list of *names* `List[str]` or a list
 | kinesis  | yes           | yes             |
 | dynamodb |               | yes             |
 | lambda   |               | yes             |
+| sns      | yes           | yes             |
 
 For example, your configuration might look like this:
 
@@ -127,6 +129,17 @@ LAMBDA = [
         "FunctionName": "my_lambda",
         "Runtime": "python3.6",
         "Environment": {"foo": True},
+    }
+]
+
+SNS = [
+    "my-topic-with-default-attrs",
+    {
+        "Name": "my-topic-with-additional-params",
+        "Tags": [{"Key": "key1", "Value": "val1"}],
+        "Attributes": {
+            "DisplayName": "YourSystemIsOnFireTopic",
+        },
     }
 ]
 ```

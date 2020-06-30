@@ -16,6 +16,7 @@ Example:
 """
 
 import typing as T
+from collections import namedtuple
 
 import backoff
 from botocore.exceptions import ClientError
@@ -23,36 +24,47 @@ from botocore.exceptions import ClientError
 import boto3_fixtures.contrib.boto3
 import boto3_fixtures.utils as utils
 
-
-@backoff.on_exception(backoff.expo, ClientError, max_time=30)
-def create_topics(topic_config_list: T.List[dict]) -> T.List[str]:
-    sns = boto3_fixtures.contrib.boto3.client("sns")
-    arns = []
-    for tpc_config in topic_config_list:
-        resp = utils.call(sns.create_topic, **tpc_config)
-
-        def _check_topic(arn):
-            return boto3_fixtures.contrib.boto3.client("sns").get_topic_attributes(
-                TopicArn=arn
-            )
-
-        utils.call(utils.backoff_check, func=lambda: _check_topic(resp["TopicArn"]))
-
-        arns.append(resp["TopicArn"])
-    return arns
+SNSTopic = namedtuple("Topic", ["name", "arn", "response"])
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
-def destroy_topics(topic_arn_list: T.List[str]):
-    sns = boto3_fixtures.contrib.boto3.client("sns")
-    for arn in topic_arn_list:
-        utils.call(sns.delete_topic, TopicArn=arn)
+def create_topic(topic_config: dict) -> SNSTopic:
+    resp = utils.call(
+        boto3_fixtures.contrib.boto3.client("sns").create_topic, **topic_config
+    )
+
+    def _check_topic(arn):
+        return boto3_fixtures.contrib.boto3.client("sns").get_topic_attributes(
+            TopicArn=arn
+        )
+
+    utils.call(utils.backoff_check, func=lambda: _check_topic(resp["TopicArn"]))
+    return SNSTopic(name=topic_config["Name"], arn=resp["TopicArn"], response=resp,)
+
+
+def create_topics(topic_configs: T.List[dict]) -> T.Dict[str, SNSTopic]:
+    topics = {}
+    for config in topic_configs:
+        tpc = create_topic(config)
+        topics[tpc.name] = tpc
+    return topics
+
+
+@backoff.on_exception(backoff.expo, ClientError, max_time=30)
+def destroy_topic(topic_arn: str):
+    return utils.call(
+        boto3_fixtures.contrib.boto3.client("sns").delete_topic, TopicArn=topic_arn
+    )
+
+
+def destroy_topics(topics: T.Dict[str, SNSTopic]):
+    return [destroy_topic(tpc.arn) for tpc in topics.values()]
 
 
 # --- Service interface ---
 
 
-def setup(topics: T.Optional[T.List[T.Union[str, dict]]] = None):
+def setup(topics: T.List[T.Union[str, dict]] = None):
     if topics is None:
         return {"topic_arns": []}
 
@@ -60,8 +72,8 @@ def setup(topics: T.Optional[T.List[T.Union[str, dict]]] = None):
 
     arns = create_topics(topic_configs)
 
-    return {"topic_arns": arns}
+    return {"topics": arns}
 
 
 def teardown(**kwargs):
-    destroy_topics(kwargs["topic_arns"])
+    return destroy_topics(kwargs["topics"])

@@ -37,10 +37,5 @@ LAMBDA = [
 
 SNS = [
     "topic-1",
-    {
-        "Name": "topic-with-tags",
-        "Tags": [
-            {"Key": "tag", "Value": "hello"}
-        ]
-    }
+    {"Name": "topic-with-tags", "Tags": [{"Key": "tag", "Value": "hello"}]},
 ]

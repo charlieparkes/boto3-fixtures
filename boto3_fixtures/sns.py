@@ -15,15 +15,13 @@ Example:
     >>> sns = b3f.contrib.pytest.service_fixture(sns, topics=TOPICS)
 """
 
-import backoff
 import typing as T
 
+import backoff
 from botocore.exceptions import ClientError
 
 import boto3_fixtures.contrib.boto3
 import boto3_fixtures.utils as utils
-
-TopicList = T.List[T.Union[str, dict]]
 
 
 @backoff.on_exception(backoff.expo, ClientError, max_time=30)
@@ -53,14 +51,12 @@ def destroy_topics(topic_arn_list: T.List[str]):
 
 # --- Service interface ---
 
-def setup(topics: T.Optional[TopicList] = None):
+
+def setup(topics: T.Optional[T.List[T.Union[str, dict]]] = None):
     if topics is None:
         return {"topic_arns": []}
 
-    topic_configs = [
-        {"Name": val} if isinstance(val, str) else val
-        for val in topics
-    ]
+    topic_configs = [{"Name": val} if isinstance(val, str) else val for val in topics]
 
     arns = create_topics(topic_configs)
 

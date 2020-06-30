@@ -53,6 +53,7 @@ def moto_fixture(
         "kinesis": moto.mock_kinesis,
         "s3": moto.mock_s3,
         "lambda": moto.mock_lambda,
+        "sns": moto.mock_sns,
     }
 
     ENV = {

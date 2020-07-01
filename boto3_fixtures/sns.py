@@ -75,5 +75,5 @@ def setup(topics: T.List[T.Union[str, dict]] = None):
     return {"topics": arns}
 
 
-def teardown(**kwargs):
-    return destroy_topics(kwargs["topics"])
+def teardown(topics: T.Dict[str, SNSTopic]):
+    return destroy_topics(topics)

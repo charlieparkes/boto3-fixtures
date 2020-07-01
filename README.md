@@ -8,6 +8,7 @@ Testing software which touches cloud infrastructure doesn't have to be difficult
 ### Supports
 * Kinesis
 * SQS
+* SNS
 * S3
 * Lambda
 * DynamoDB

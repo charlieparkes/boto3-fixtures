@@ -34,3 +34,8 @@ LAMBDA = [
         "Environment": {"test_bool_env_var": True},
     }
 ]
+
+SNS = [
+    "topic-1",
+    {"Name": "topic-with-tags", "Tags": [{"Key": "tag", "Value": "hello"}]},
+]

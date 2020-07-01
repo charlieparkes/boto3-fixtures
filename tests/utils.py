@@ -46,3 +46,10 @@ def check_lambda_fixtures(lambda_functions):
     lambda_names = {lam["FunctionName"]: lam for lam in resp["Functions"]}
     for lam in lambda_functions:
         assert lam["FunctionName"] in lambda_names
+
+
+def check_sns_fixtures(sns_topics):
+    client = boto3.client("sns")
+    resp = utils.call(utils.backoff_check, func=lambda: client.list_topics())
+    topic_names = [tpc["TopicArn"].rsplit(":", 1)[-1] for tpc in resp["Topics"]]
+    assert set(topic_names) == set(sns_topics)

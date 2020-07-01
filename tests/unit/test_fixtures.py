@@ -22,3 +22,7 @@ class TestMockWithMoto:
     @pytest.mark.usefixtures("lam")
     def test_lambda_fixtures(self, lambda_functions):
         tests.utils.check_lambda_fixtures(lambda_functions)
+
+    @pytest.mark.usefixtures("sns")
+    def test_sns_fixtures(self, sns_topics):
+        tests.utils.check_sns_fixtures(sns_topics)

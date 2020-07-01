@@ -1,7 +1,7 @@
 from contextlib import ContextDecorator
 
 import boto3_fixtures as b3f
-from boto3_fixtures import awslambda, dynamodb, kinesis, s3, sqs
+from boto3_fixtures import awslambda, dynamodb, kinesis, s3, sns, sqs
 
 SERVICES = {
     "lambda": awslambda,
@@ -9,6 +9,7 @@ SERVICES = {
     "kinesis": kinesis,
     "s3": s3,
     "sqs": sqs,
+    "sns": sns,
 }
 
 

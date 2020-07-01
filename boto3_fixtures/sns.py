@@ -15,8 +15,8 @@ Example:
     >>> sns = b3f.contrib.pytest.service_fixture(sns, topics=TOPICS)
 """
 
-import typing as T
 from collections import namedtuple
+from typing import Dict, List, Union
 
 import backoff
 from botocore.exceptions import ClientError
@@ -42,7 +42,7 @@ def create_topic(topic_config: dict) -> SNSTopic:
     return SNSTopic(name=topic_config["Name"], arn=resp["TopicArn"], response=resp,)
 
 
-def create_topics(topic_configs: T.List[dict]) -> T.Dict[str, SNSTopic]:
+def create_topics(topic_configs: List[dict]) -> Dict[str, SNSTopic]:
     topics = {}
     for config in topic_configs:
         tpc = create_topic(config)
@@ -57,14 +57,11 @@ def destroy_topic(topic_arn: str):
     )
 
 
-def destroy_topics(topics: T.Dict[str, SNSTopic]):
+def destroy_topics(topics: Dict[str, SNSTopic]):
     return [destroy_topic(tpc.arn) for tpc in topics.values()]
 
 
-# --- Service interface ---
-
-
-def setup(topics: T.List[T.Union[str, dict]] = None):
+def setup(topics: Union[List[str], List[dict]], **kwargs):
     if topics is None:
         return {"topic_arns": []}
 
@@ -75,5 +72,5 @@ def setup(topics: T.List[T.Union[str, dict]] = None):
     return {"topics": arns}
 
 
-def teardown(topics: T.Dict[str, SNSTopic]):
+def teardown(topics: Dict[str, SNSTopic], **kwargs):
     return destroy_topics(topics)

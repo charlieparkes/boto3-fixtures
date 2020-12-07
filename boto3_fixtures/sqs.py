@@ -79,7 +79,9 @@ def setup(queues: Union[List[str], List[dict]], **kwargs):
                 "deadLetterTargetArn": dlqs[_dlq_name(name)].arn,
             }
             mdict.set_nested(
-                q, redrive_key, json.dumps(new_policy),
+                q,
+                redrive_key,
+                json.dumps(new_policy),
             )
     return {"queues": create_queues(queues)}
 

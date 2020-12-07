@@ -39,7 +39,11 @@ def create_topic(topic_config: dict) -> SNSTopic:
         )
 
     utils.call(utils.backoff_check, func=lambda: _check_topic(resp["TopicArn"]))
-    return SNSTopic(name=topic_config["Name"], arn=resp["TopicArn"], response=resp,)
+    return SNSTopic(
+        name=topic_config["Name"],
+        arn=resp["TopicArn"],
+        response=resp,
+    )
 
 
 def create_topics(topic_configs: List[dict]) -> Dict[str, SNSTopic]:

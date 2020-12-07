@@ -3,9 +3,9 @@ import logging
 # import moto
 import pytest
 import pytest_localstack
-from tests import fixtures
 
 import boto3_fixtures as b3f
+from tests import fixtures
 
 logger = logging.getLogger()
 
@@ -21,14 +21,20 @@ moto = b3f.contrib.pytest.moto_fixture(**stack_config)
 
 sqs = b3f.contrib.pytest.service_fixture("sqs", scope="class", queues=fixtures.SQS)
 kinesis = b3f.contrib.pytest.service_fixture(
-    "kinesis", scope="class", streams=fixtures.KINESIS,
+    "kinesis",
+    scope="class",
+    streams=fixtures.KINESIS,
 )
 dynamodb = b3f.contrib.pytest.service_fixture(
-    "dynamodb", scope="class", tables=fixtures.DYNAMODB,
+    "dynamodb",
+    scope="class",
+    tables=fixtures.DYNAMODB,
 )
 s3 = b3f.contrib.pytest.service_fixture("s3", scope="class", buckets=fixtures.S3)
 lam = b3f.contrib.pytest.service_fixture(
-    "lambda", scope="class", lambdas=fixtures.LAMBDA,
+    "lambda",
+    scope="class",
+    lambdas=fixtures.LAMBDA,
 )
 sns = b3f.contrib.pytest.service_fixture("sns", scope="class", topics=fixtures.SNS)
 

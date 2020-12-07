@@ -368,7 +368,7 @@
                 "sha256:7b51f0106c8ec564b1bef3d9c588bc694ce2b92125bbb6278f4f2f5b54ec3592",
                 "sha256:a3d34a8464ce1d5d7c92b0ea4e921e696d86f2aa212e684451cb1482c8d84ed5"
             ],
-            "markers": "python_version < '3.7' and python_version != '3.4'",
+            "markers": "python_version < '3.7'",
             "version": "==3.3.0"
         },
         "iniconfig": {
